@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add MCQ</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 100%;
+    }
+    button {
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .mcq-list {
+      margin-top: 20px;
+    }
+    .mcq-item {
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .mcq-item strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .button-spacing {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Add MCQ for Course ID: {{ course_id }}</h2>
+
+    <form method="POST">
+      <input type="text" name="question" placeholder="Question" required>
+      <input type="text" name="option_a" placeholder="Option A" required>
+      <input type="text" name="option_b" placeholder="Option B" required>
+      <input type="text" name="option_c" placeholder="Option C" required>
+      <input type="text" name="option_d" placeholder="Option D" required>
+      <input type="text" name="correct_option" placeholder="Correct Option (A/B/C/D)" required>
+
+      <button type="submit" class="button-spacing">Add MCQ</button>
+    </form>
+
+    <a href="{{ url_for('teacher_dashboard') }}" style="text-decoration: none; display: block;">
+      <button type="button">Back to Dashboard</button>
+    </a>
+
+    <div class="mcq-list">
+      <h3>Existing MCQs</h3>
+      {% if mcqs %}
+        {% for mcq in mcqs %}
+          <div class="mcq-item">
+            <strong>{{ mcq.question }}</strong>
+            A) {{ mcq.option_a }}<br>
+            B) {{ mcq.option_b }}<br>
+            C) {{ mcq.option_c }}<br>
+            D) {{ mcq.option_d }}<br>
+            <em>Correct: {{ mcq.correct_option }}</em>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No MCQs added yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

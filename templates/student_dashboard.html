@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #80d0c7, #c2d6e4);
+    }
+    .container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    h3 {
+      color: #555;
+    }
+    .course-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      transition: background 0.3s;
+    }
+    .course-card:hover {
+      background: #f0f0f0;
+    }
+    .course-name {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+    .semester {
+      font-size: 0.9em;
+      color: #666;
+    }
+    .exam-btn {
+      padding: 8px 16px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9em;
+      font-weight: bold;
+      opacity: 0.6;
+      pointer-events: none;
+      transition: background 0.3s;
+    }
+    .exam-btn:hover {
+      background: #388E3C; /* Darker green on hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Welcome, {{ username }}</h2>
+    <h3>Your Courses</h3>
+
+    {% for course in courses %}
+      <div class="course-card">
+        <div>
+          <div class="course-name">{{ course.name }}</div>
+          <div class="semester">Semester: {{ course.semester }}</div>
+        </div>
+        <button class="exam-btn">Take Exam (Coming Soon)</button>
+      </div>
+    {% else %}
+      <p>No courses assigned.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>

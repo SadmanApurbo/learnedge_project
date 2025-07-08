@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .dashboard-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .course-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #f9f9f9;
+      transition: 0.3s;
+    }
+    .course-card:hover {
+      background: #eef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .course-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .course-semester {
+      color: #666;
+    }
+    .mcq-link {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 10px;
+      background: #4285F4;
+      color: #fff;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+    .mcq-link:hover {
+      background: #3367D6;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2>Welcome, {{ username }}</h2>
+    <h3>Your Courses:</h3>
+
+    {% for course in courses %}
+      <div class="course-card">
+        <div class="course-title">{{ course['name'] }}</div>
+        <div class="course-semester">{{ course['semester'] }}</div>
+        <a href="{{ url_for('teacher_mcq', course_id=course['id']) }}" class="mcq-link">Create MCQ</a>
+        <a href="{{ url_for('publish_exam', course_id=course.id) }}">Publish Exam</a>
+
+      </div>
+    {% else %}
+      <p>No courses assigned.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>
