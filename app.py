@@ -9,10 +9,10 @@ app.secret_key = 'your_secret_key'
 
 # Database connection
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="learnedge_db"
+    host="sql.freedb.tech",
+    user="freedb_SadmanApurbo",
+    password="qK$3eRR$s#eBGc2",
+    database="freedb_learnedge_db"
 )
 db.autocommit = True
 cursor = db.cursor(dictionary=True)
@@ -294,4 +294,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
