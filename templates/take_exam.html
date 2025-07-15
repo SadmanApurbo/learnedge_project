@@ -140,6 +140,19 @@
   const timerInterval = setInterval(updateTimer, 1000);
   updateTimer();
 </script>
+<script>
+  let hasLostFocus = false;
+
+  window.onblur = () => {
+    if (!hasLostFocus) {
+      hasLostFocus = true;
+      alert("You switched tab or minimized the browser. Submitting exam automatically!");
+
+      // Auto-submit the exam form
+      document.querySelector("form").submit();
+    }
+  };
+</script>
 
 </body>
 </html>
