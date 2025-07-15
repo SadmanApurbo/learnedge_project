@@ -286,7 +286,7 @@ def submit_exam(course_id):
     return redirect(url_for('student_dashboard'))
 
 
-
+#sadman
 
 @app.route('/logout')
 def logout():
