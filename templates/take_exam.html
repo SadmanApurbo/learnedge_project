@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ course.name }} - Exam</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #83a4d4, #b6fbff);
+      user-select: none;
+    }
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    .question {
+      display: none;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    p {
+      font-weight: bold;
+      color: #444;
+    }
+    label {
+      display: block;
+      margin: 8px 0;
+      background: #eaf4ff;
+      padding: 8px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    input[type="radio"] {
+      margin-right: 8px;
+    }
+    .button-container {
+      text-align: right;
+    }
+    .btn {
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      background-color: #4CAF50;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body oncontextmenu="return false">
+  <div class="container">
+    <h3 id="timer" style="text-align:center; color:red; font-weight:bold;"></h3>
+
+    <h2>{{ course.name }} - Exam</h2>
+    <form method="POST" action="{{ url_for('submit_exam', course_id=course_id) }}">
+
+      {% for question in mcqs %}
+  <div class="question">
+    <p>Q{{ loop.index }}. {{ question.question }}</p>
+    <label><input type="radio" name="question_{{ question.id }}" value="A"> {{ question.option_a }}</label>
+    <label><input type="radio" name="question_{{ question.id }}" value="B"> {{ question.option_b }}</label>
+    <label><input type="radio" name="question_{{ question.id }}" value="C"> {{ question.option_c }}</label>
+    <label><input type="radio" name="question_{{ question.id }}" value="D"> {{ question.option_d }}</label>
+  </div>
+{% endfor %}
+
+      <div class="button-container">
+        <button type="button" class="btn" id="nextBtn">Next</button>
+        <button type="submit" class="btn" id="submitBtn" style="display: none;">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const questions = document.querySelectorAll('.question');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let current = 0;
+
+    function showQuestion(index) {
+      questions.forEach((q, i) => {
+        q.style.display = i === index ? 'block' : 'none';
+      });
+
+      nextBtn.style.display = index < questions.length - 1 ? 'inline-block' : 'none';
+      submitBtn.style.display = index === questions.length - 1 ? 'inline-block' : 'none';
+    }
+
+    function validateAndNext() {
+      const currentOptions = questions[current].querySelectorAll('input[type="radio"]');
+      const answered = [...currentOptions].some(opt => opt.checked);
+      if (!answered) {
+        alert("Please select an answer before continuing.");
+        return;
+      }
+      current++;
+      showQuestion(current);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showQuestion(0);
+      nextBtn.addEventListener("click", validateAndNext);
+    });
+  </script>
+  <script>
+  let totalSeconds = {{ duration * 60 }};
+  const timerDisplay = document.getElementById('timer');
+  const form = document.querySelector('form');
+
+  function updateTimer() {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    timerDisplay.textContent = `Time Remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+    totalSeconds--;
+
+    if (totalSeconds < 0) {
+      clearInterval(timerInterval);
+      form.submit();  // ⏰ auto-submit form
+    }
+  }
+
+  const timerInterval = setInterval(updateTimer, 1000);
+  updateTimer();
+</script>
+
+</body>
+</html>

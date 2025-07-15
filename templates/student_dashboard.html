@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Student Dashboard</title>
+  
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -55,18 +56,52 @@
       border-radius: 5px;
       font-size: 0.9em;
       font-weight: bold;
-      opacity: 0.6;
-      pointer-events: none;
       transition: background 0.3s;
     }
     .exam-btn:hover {
-      background: #388E3C; /* Darker green on hover */
+      background: #388E3C;
     }
+    .exam-btn.disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .logout-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  font-weight: bold;
+  text-decoration: none;
+  color: white;
+  background-color: #e93e32; /* red */
+  border: none;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+  float: right;
+  margin-top: 1px;
+}
+
+.logout-btn:hover {
+  background-color: #5f1616;
+}
+
   </style>
 </head>
 <body>
+  <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
   <div class="container">
+
     <h2>Welcome, {{ username }}</h2>
+    
+
+    {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for message in messages %}
+        <p style="color: red;">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
     <h3>Your Courses</h3>
 
     {% for course in courses %}
@@ -75,11 +110,18 @@
           <div class="course-name">{{ course.name }}</div>
           <div class="semester">Semester: {{ course.semester }}</div>
         </div>
-        <button class="exam-btn">Take Exam (Coming Soon)</button>
+        {% if course.exam_published %}
+          <a href="{{ url_for('take_exam', course_id=course.id) }}">
+            <button class="exam-btn">Take Exam</button>
+          </a>
+        {% else %}
+          <button class="exam-btn disabled">Take Exam (Coming Soon)</button>
+        {% endif %}
       </div>
     {% else %}
       <p>No courses assigned.</p>
     {% endfor %}
   </div>
+  
 </body>
 </html>

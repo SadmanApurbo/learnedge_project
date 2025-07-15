@@ -1,18 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from datetime import datetime
 import mysql.connector
 from itsdangerous import URLSafeTimedSerializer
-from utils.email_utils import send_reset_email  # Assuming you have this
+from utils.email_utils import send_reset_email
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# DB connection
+# Database connection
 db = mysql.connector.connect(
     host="localhost",
     user="root",
     password="",
     database="learnedge_db"
 )
+db.autocommit = True
 cursor = db.cursor(dictionary=True)
 s = URLSafeTimedSerializer(app.secret_key)
 
@@ -185,16 +187,105 @@ def student_dashboard():
     if 'role' not in session or session['role'] != 'student':
         return redirect(url_for('login'))
 
+    student_id = session['user_id']
+
+    cursor.fetchall()  # ✅ Moved this line inside properly
+
     cursor.execute("""
-        SELECT c.id, c.name, c.semester
+        SELECT c.id, c.name, c.semester, IFNULL(e.published, FALSE) AS exam_published
         FROM courses c
         JOIN student_courses sc ON c.id = sc.course_id
+        LEFT JOIN exams e ON c.id = e.course_id
         WHERE sc.student_id = %s
-    """, (session['user_id'],))
+    """, (student_id,))
 
     courses = cursor.fetchall()
-
     return render_template('student_dashboard.html', username=session['username'], courses=courses)
+
+
+@app.route('/take_exam/<int:course_id>')
+def take_exam(course_id):
+    if 'user_id' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+
+    student_id = session['user_id']
+
+    # Check if the student already submitted answers for this course
+    cursor.execute("""
+        SELECT * FROM student_answers 
+        WHERE student_id = %s AND course_id = %s
+    """, (student_id, course_id))
+    already_taken = cursor.fetchone()
+    if already_taken:
+        flash("You have already taken this exam.")
+        return redirect(url_for('student_dashboard'))
+
+    # Load questions
+    cursor.execute("SELECT * FROM mcq_questions WHERE course_id = %s", (course_id,))
+    mcqs = cursor.fetchall()
+
+    cursor.execute("SELECT name FROM courses WHERE id = %s", (course_id,))
+    course = cursor.fetchone()
+
+    # ✅ Fetch exam duration from the database
+    cursor.execute("SELECT duration_minutes FROM exams WHERE course_id = %s", (course_id,))
+    exam = cursor.fetchone()
+    duration = exam['duration_minutes'] if exam else 30  # fallback to 30 mins
+
+    return render_template("take_exam.html", mcqs=mcqs, course=course, course_id=course_id, duration=duration)
+
+
+
+
+@app.route('/submit_exam/<int:course_id>', methods=['POST'])
+def submit_exam(course_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    student_id = session['user_id']
+    submitted_at = datetime.now()
+
+    # ✅ DEBUG: Check what form was submitted
+    print("DEBUG: Form Data:", request.form)
+
+    # ✅ Get all question IDs for this course
+    cursor.execute("SELECT id FROM mcq_questions WHERE course_id = %s", (course_id,))
+    question_rows = cursor.fetchall()
+    question_ids = [row['id'] for row in question_rows]
+
+    print("DEBUG: Question IDs:", question_ids)
+
+    # ✅ Get answered questions from form
+    answered = {}
+    for key, value in request.form.items():
+        if key.startswith("question_"):
+            question_id = int(key.split("_")[1])
+            answered[question_id] = value
+
+    print("DEBUG: Answered:", answered)
+
+    try:
+        for qid in question_ids:
+            selected_option = answered.get(qid, "")  # empty string if not answered
+
+            print(f"DEBUG: Inserting QID={qid}, Option='{selected_option}'")
+
+            cursor.execute("""
+                INSERT INTO student_answers (student_id, course_id, question_id, selected_option, submitted_at)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (student_id, course_id, qid, selected_option, submitted_at))
+        
+        db.commit()
+        print("✅ COMMIT successful")
+    except Exception as e:
+        print("❌ DB INSERT FAILED:", e)
+        flash("An error occurred while submitting answers. Please try again.")
+        return redirect(url_for('student_dashboard'))
+
+    flash("Your answers have been submitted successfully.")
+    return redirect(url_for('student_dashboard'))
+
+
 
 
 @app.route('/logout')
